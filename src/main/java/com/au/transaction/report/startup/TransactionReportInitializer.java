@@ -72,13 +72,13 @@ public class TransactionReportInitializer implements ApplicationListener<Applica
 		/* Send the product and client details for the report generation */
 		printer.printReport(resultMap, clientInformation, outputFile);
 
-//		try {
-//			Thread.sleep(500);
-//		} catch (InterruptedException e) {
-//			log.error("Unable to sleep after generating report due to "+e.getMessage());
-//		} finally {			
-//			System.exit(0);
-//		}
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			log.error("Unable to sleep after generating report due to "+e.getMessage());
+		} finally {			
+			System.exit(0);
+		}
 	}
 
 }
