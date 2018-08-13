@@ -34,3 +34,6 @@ Also, as part of mvn spring-boot:run, the tests will run.
 The Output.csv (with required headers and data) is generated under the output folder in the project (root folder).
 
 Also, the log file is generated in the root folder of the project which is timestamped for easy identification which will look something like log-YYYY-mm-DDTHHmmSS.log
+
+## Details about an individual transaction
+The specification of each transaction (fields and it's indices) is listed in the system file specification which can be found in the root folder of the project.
