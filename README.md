@@ -1,5 +1,5 @@
 # transaction-report
-An application that creates a CSV report of the transactions based on certain rules
+An application that creates a CSV report of the transactions based on certain rules provided for the input list
 
 ## Prerequisites
 Below is the list of things needed to be installed and configured before trying to run the application
