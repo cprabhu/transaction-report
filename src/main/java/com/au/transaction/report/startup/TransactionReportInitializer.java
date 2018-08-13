@@ -1,7 +1,5 @@
 package com.au.transaction.report.startup;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.Map;
@@ -21,6 +19,13 @@ import com.au.transaction.report.service.TransactionService;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The class responsible for the parsing of input and 
+ * generating of report(CSV) for all products per client. 
+ * 
+ * @author ChaitanyaPrabhu
+ *
+ */
 @Component
 @Slf4j
 public class TransactionReportInitializer implements ApplicationListener<ApplicationReadyEvent> {
@@ -37,44 +42,43 @@ public class TransactionReportInitializer implements ApplicationListener<Applica
 	@Autowired
 	private TransactionService transactionService;
 	
-	public List<String> parseInput() {
-		List<String> inputStrList = null;
-		try {
-			inputStrList = Files.readAllLines(input.getFile().toPath());
-		} catch (IOException e) {
-			log.error("Unable to read all of the input file due to "+e.getMessage());
-		}
-		log.info("On bootup, The input file is parsed successfully.");
-		return inputStrList;
-	}
+	@Autowired
+	private PrintReport printer;
 	
 	@Override
 	public void onApplicationEvent(ApplicationReadyEvent arg0) {
 		/*
 		 * Parse the input file into a list with also filtering the transactions only
-		 * for the required customer - 1234 in this case
+		 * for the required customer - 1234 in this case.
 		 */
-		List<String> parsedList = parseInput().parallelStream()
-				.filter(transactionString -> transactionString.substring(7, 11).equalsIgnoreCase(customerId))
-				.collect(Collectors.toList());
+		List<String> parsedList = transactionService.getParsedListOfTransactions(input, customerId);
 		log.info("The parsed list of transactions for customer "+customerId+" has "+parsedList.size()+" records.");
 		
 		final List<Transaction> transactionList = transactionService.getTransactions(parsedList);
-//		transactionList.forEach(System.out::println);
 		final String clientInformation = transactionList.stream().findAny().get().getClient().toString();
 		
+		/*
+		 * Need to group all the products to the sum total of transaction amount.
+		 */
 		Map<Product, LongSummaryStatistics> resultMap = transactionList.parallelStream().collect(Collectors.groupingByConcurrent(Transaction::getProduct, Collectors.summarizingLong(t -> {
 			long quantityLong = t.getQuantityLongSign().equals(Byte.valueOf("1")) ? -t.getQuantityLong() : t.getQuantityLong();
 			long quantityShort = t.getQuantityShortSign().equals(Byte.valueOf("1")) ? -t.getQuantityShort() : t.getQuantityShort();
 			return quantityLong - quantityShort;
 		})));
-//		System.out.println("TransactionReportInitializer.onApplicationEvent() "+resultMap);
+		log.info("Total number of products mapped to the total transaction => "+resultMap.size());
 		
-		PrintReport.printReport(resultMap, clientInformation, outputFile);
+		log.info("The report for "+clientInformation+" will now be generated on "+outputFile+".");
+		
+		/* Send the product and client details for the report generation */
+		printer.printReport(resultMap, clientInformation, outputFile);
 
-		
-		System.exit(0);
-		
+//		try {
+//			Thread.sleep(500);
+//		} catch (InterruptedException e) {
+//			log.error("Unable to sleep after generating report due to "+e.getMessage());
+//		} finally {			
+//			System.exit(0);
+//		}
 	}
 
 }

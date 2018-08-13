@@ -9,15 +9,17 @@ import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.springframework.stereotype.Component;
 
 import com.au.transaction.report.model.Product;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 public class PrintReport {
 
-	public static void printReport(Map<Product, LongSummaryStatistics> productSummaryMap,
+	public void printReport(Map<Product, LongSummaryStatistics> productSummaryMap,
 			final String clientInformation, final String outputFile) {
 		try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputFile));
 			 CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("Client_Information",
@@ -27,13 +29,14 @@ public class PrintReport {
 				try {
 					csvPrinter.printRecord(clientInformation, product.toString(), statistics.getSum());
 				} catch (IOException e) {
-					log.error("Writing to "+outputFile+" has resulted in error - "+e.getMessage());
+					log.error("Writing product statistics to " + outputFile + " has resulted in error - "
+							+ e.getMessage());
 				}
 			});
 			csvPrinter.flush();
-			log.info(outputFile+" is written successfully for client "+clientInformation);
+			log.info(outputFile + " is written successfully!");
 		} catch (IOException e) {
-			log.error("Writing to "+outputFile+" has resulted in error - "+e.getMessage());
+			log.error("Writing to " + outputFile + " has resulted in error - " + e.getMessage());
 		}
 	}
 

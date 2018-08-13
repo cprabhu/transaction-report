@@ -1,13 +1,19 @@
 package com.au.transaction.report.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.au.transaction.report.model.Client;
 import com.au.transaction.report.model.Product;
 import com.au.transaction.report.model.Transaction;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service class to extract the transactions from the parsed input list of
@@ -17,6 +23,7 @@ import com.au.transaction.report.model.Transaction;
  *
  */
 @Service
+@Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
 	@Override
@@ -34,6 +41,7 @@ public class TransactionServiceImpl implements TransactionService {
 			transaction.setQuantityShort(Long.parseLong(transactionString.substring(63, 73)));
 			resultList.add(transaction);
 		});
+		log.debug("Complete list of input transactions has been parsed into Transaction objects.");
 		return resultList;
 	}
 	
@@ -53,6 +61,20 @@ public class TransactionServiceImpl implements TransactionService {
 		product.setSymbol(transaction.substring(31, 37));
 		product.setExpirationDate(transaction.substring(37, 45));
 		return product;
+	}
+
+	@Override
+	public List<String> getParsedListOfTransactions(Resource input, String customerId) {
+		List<String> inputStrList = null;
+		try {
+			inputStrList = Files.readAllLines(input.getFile().toPath());
+		} catch (IOException e) {
+			log.error("Unable to read all of the input file due to " + e.getMessage());
+		}
+		log.info("The input file has been parsed successfully.");
+		return inputStrList.parallelStream()
+				.filter(transactionString -> transactionString.substring(7, 11).equalsIgnoreCase(customerId))
+				.collect(Collectors.toList());
 	}
 
 }
