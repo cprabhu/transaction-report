@@ -42,9 +42,6 @@ public class TransactionReportInitializer implements ApplicationListener<Applica
 	@Autowired
 	private TransactionService transactionService;
 	
-	@Autowired
-	private PrintReport printer;
-	
 	@Override
 	public void onApplicationEvent(ApplicationReadyEvent arg0) {
 		/*
@@ -56,6 +53,7 @@ public class TransactionReportInitializer implements ApplicationListener<Applica
 		
 		final List<Transaction> transactionList = transactionService.getTransactions(parsedList);
 		final String clientInformation = transactionList.stream().findAny().get().getClient().toString();
+		log.debug("List of transactions for customer "+customerId+" => "+transactionList);
 		
 		/*
 		 * Need to group all the products to the sum total of transaction amount.
@@ -70,15 +68,13 @@ public class TransactionReportInitializer implements ApplicationListener<Applica
 		log.info("The report for "+clientInformation+" will now be generated on "+outputFile+".");
 		
 		/* Send the product and client details for the report generation */
-		printer.printReport(resultMap, clientInformation, outputFile);
+		PrintReport.printReport(resultMap, clientInformation, outputFile);
 
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			log.error("Unable to sleep after generating report due to "+e.getMessage());
-		} finally {			
-			System.exit(0);
-		}
+		/*
+		 * If needed to terminate the application soon after generating the report, uncomment the below line.
+		 */
+		//System.exit(0);
+
 	}
 
 }

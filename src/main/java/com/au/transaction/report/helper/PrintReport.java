@@ -9,20 +9,25 @@ import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.springframework.stereotype.Component;
 
 import com.au.transaction.report.model.Product;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Generates the report with given product information and output file to be
+ * written
+ * 
+ * @author ChaitanyaPrabhu
+ *
+ */
 @Slf4j
-@Component
 public class PrintReport {
 
-	public void printReport(Map<Product, LongSummaryStatistics> productSummaryMap,
-			final String clientInformation, final String outputFile) {
+	public static void printReport(Map<Product, LongSummaryStatistics> productSummaryMap, final String clientInformation,
+			final String outputFile) {
 		try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputFile));
-			 CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("Client_Information",
+				CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("Client_Information",
 						"Product_Information", "Total_Transaction_Amount"))) {
 
 			productSummaryMap.forEach((product, statistics) -> {

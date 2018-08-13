@@ -26,6 +26,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
+	/**
+	 * Returns the parsed transaction objects.
+	 * 
+	 * Each field of transaction is parsed from specific indices from System A
+	 * File specification whose details can be found on README.md
+	 */
 	@Override
 	public List<Transaction> getTransactions(List<String> transactionList) {
 		List<Transaction> resultList = new ArrayList<>();
@@ -33,18 +39,20 @@ public class TransactionServiceImpl implements TransactionService {
 			Transaction transaction = new Transaction();
 			transaction.setClient(getClient(transactionString));
 			transaction.setProduct(getProduct(transactionString));
-			transaction.setQuantityLongSign(Byte.parseByte(
-					!transactionString.substring(51, 52).trim().replaceAll("\\s", "").isEmpty() ? transactionString.substring(51, 52) : "0"));
+			transaction.setQuantityLongSign(
+					Byte.parseByte(!transactionString.substring(51, 52).trim().replaceAll("\\s", "").isEmpty()
+							? transactionString.substring(51, 52) : "0"));
 			transaction.setQuantityLong(Long.parseLong(transactionString.substring(52, 62)));
-			transaction.setQuantityShortSign(Byte.parseByte(
-					!transactionString.substring(62, 63).trim().replaceAll("\\s", "").isEmpty() ? transactionString.substring(62, 63) : "0"));
+			transaction.setQuantityShortSign(
+					Byte.parseByte(!transactionString.substring(62, 63).trim().replaceAll("\\s", "").isEmpty()
+							? transactionString.substring(62, 63) : "0"));
 			transaction.setQuantityShort(Long.parseLong(transactionString.substring(63, 73)));
 			resultList.add(transaction);
 		});
 		log.debug("Complete list of input transactions has been parsed into Transaction objects.");
 		return resultList;
 	}
-	
+
 	private Client getClient(String transaction) {
 		Client client = new Client();
 		client.setClientType(transaction.substring(3, 7));
@@ -63,6 +71,9 @@ public class TransactionServiceImpl implements TransactionService {
 		return product;
 	}
 
+	/**
+	 * Read the input file into a list of transaction Strings.
+	 */
 	@Override
 	public List<String> getParsedListOfTransactions(Resource input, String customerId) {
 		List<String> inputStrList = null;
